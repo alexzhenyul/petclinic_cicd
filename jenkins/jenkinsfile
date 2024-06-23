@@ -12,14 +12,14 @@ node {
         }
         stage('clone') {
             git branch: 'main', url: 'git@github.com:alexzhenyul/petclinic_cicd.git'
-        } // stage: clone
+        }
         stage('compile') {
             sh """ #!/bin/bash
                 cd petclinic_application_code
                 mvn clean install -DskipTests=true
             """
-        } // stage: compile
-    } // stage: code
+        }
+    } 
     stage('Tests') {
         parallel unitTest: {
             stage ("unitTest") {
@@ -29,16 +29,16 @@ node {
 
                         echo 'surefire report generated in http://localhost:8080/job/${projectName}/${env.BUILD_ID}/execution/node/3/ws/target/site/surefire-report.html'
                     """
-                } // timeout
-            } // stage: unittest
+                }
+            } 
         }, checkstyle: {
             stage ("checkStyle") {
                 timeout(time: 2, unit: 'MINUTES') {
                     sh """ #!/bin/bash
                         mvn validate
                     """
-                } // timeout
-            } // stage: validate
+                } 
+            }
         }, codeCoverage: {
             stage ("codeCoverage") {
                 timeout(time: 2, unit: 'MINUTES') {
@@ -47,16 +47,16 @@ node {
                                     
                         echo 'Jacoco report generated in http://localhost:8080/job/${projectName}/${env.BUILD_ID}/execution/node/3/ws/target/site/jacoco/index.html'
                     """
-                } // timeout
-            } // stage: Jacoo
-        } // parallel
-    } // stage: tests
+                } 
+            }
+        }
+    } 
     stage ("Container") {
         stage('build') {
             sh """ #!/bin/bash
                 docker image build -f Dockerfile -t ${projectName}:${env.BUILD_ID} .
             """
-        } // stage: build
+        } 
         stage('tag') {
             parallel listContainers: {
                 sh """ #!/bin/bash
@@ -75,21 +75,40 @@ node {
                     docker tag ${projectName}:${env.BUILD_ID} krishnamanchikalapudi/${projectName}:latest
                 """
             }
-        } // stage: tag
-        stage('publish') {
+        } 
+        stage('provision server') {
+            environment {
+                AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
+                AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
+                TF_VAR_env_prefix = 'test'
+            }
+            steps {
+                script {
+                    dir('terraform') {
+                        sh "terraform init"
+                        sh "terraform apply --auto-approve"
+                        EC2_PUBLIC_IP = sh(
+                            script: "terraform output ec2_public_ip",
+                            returnStdout: true
+                        ).trim()
+                    }
+                }
+            }
+        }
+        stage('deployment') {
             withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
                 sh """ #!/bin/bash
                     docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PWD
                     echo 'Login success...'
 
-                    docker push krishnamanchikalapudi/${projectName}:${env.BUILD_ID}
-                    docker push krishnamanchikalapudi/${projectName}:latest
+                    docker push alexzhenyul/${projectName}:${env.BUILD_ID}
+                    docker push alexzhenyul/${projectName}:latest
 
                     docker logout
                     echo 'Logut...'
                 """
-            } // withCredentials: dockerhub
-        } // stage: push
+            }
+        } 
         stage('clean') {
             sh """ #!/bin/bash 
                 docker images ls 
@@ -99,8 +118,8 @@ node {
 
                 docker images ls 
             """ 
-        } // stage: clean
-    } // stage: docker
+        } 
+    }
 }
 def softwareVersion() {
     sh """ #!/bin/bash
