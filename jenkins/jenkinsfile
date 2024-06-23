@@ -68,11 +68,11 @@ node {
                 """
             }, tagBuildNumb: {
                     sh """ #!/bin/bash
-                        docker tag ${projectName}:${env.BUILD_ID} krishnamanchikalapudi/${projectName}:${env.BUILD_ID}
+                        docker tag ${projectName}:${env.BUILD_ID} alexzhenyul/${projectName}:${env.BUILD_ID}
                     """
             }, tagLatest: {
                 sh """ #!/bin/bash
-                    docker tag ${projectName}:${env.BUILD_ID} krishnamanchikalapudi/${projectName}:latest
+                    docker tag ${projectName}:${env.BUILD_ID} alexzhenyul/${projectName}:latest
                 """
             }
         } 

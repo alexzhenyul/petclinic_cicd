@@ -14,21 +14,7 @@ Reference: https://github.com/spring-projects/spring-petclinic
 5. License
 
 # Project Structure
-.
-├── Jenkins                     # Jenkins pipeline script
-│   ├── Jenkinsfile
-├── README.md                   # Project README
-├── petclinic                   # Spring PetClinic source code
-│   ├── ...
-├── terraform                   # Terraform scripts for infrastructure
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   ├── ...
-└── scripts                     # Additional scripts for setup and deployment (cmd & python files)
-    ├── setup.sh
-    └── deploy.sh
-
+Pending
 
 # Prerequisites
 1. JDK 17+
@@ -74,8 +60,8 @@ Pending
    b. Tag docker images
    c. Push docker images to dockerhub/ECR
 4. Deployment
-   a. Provioning EKS cluser
-   b. Deploy application on EKS
+   a. Provioning EC2/EKS cluser
+   b. Deploy application on EC2/EKS
 
 # Monitoring & Maintenances
 Pending
